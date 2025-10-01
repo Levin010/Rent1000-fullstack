@@ -4,12 +4,15 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link';
 import React from 'react'
+import { useRouter } from "next/navigation";
+
 
 const CallToActionSection = () => {
+    const router = useRouter();
   return (
     <div className='relative py-24'>
         <Image
-        src='/landing-call-to-action.jpg'
+        src='/landing-rent1000-call-to-action.jpeg'
         alt='Rent1000 Search Section Background'
         fill
         className='object-cover object-center'
@@ -33,12 +36,12 @@ const CallToActionSection = () => {
                     </p>
                     <div className='flex justify-center md:justify-start gap-4'>
                         <button
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        onClick={() => router.push("/search")}
                         className='inline-block text-primary-700 bg-white rounded-lg px-6 py-3 font-semibold hover:bg-primary-500 hover:text-primary-50'
                         >Search</button>
                         <Link
                         href='/signup'
-                        className='inline-block text-white bg-secondary-500 rounded-lg px-6 py-3 font-semibold hover:bg-secondary-600'
+                        className='inline-block text-white bg-secondary-700 rounded-lg px-6 py-3 font-semibold hover:bg-secondary-600'
                         scroll={false}
                         >
                         Sign Up
