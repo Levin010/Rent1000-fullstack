@@ -196,6 +196,11 @@ export const createProperty = async (
 ): Promise<void> => {
   try {
     const files = req.files as Express.Multer.File[];
+    console.log('Files received:', files.map(f => ({ 
+      name: f.originalname, 
+      size: f.size, 
+      hasBuffer: !!f.buffer 
+    })));
     const {
       address,
       city,
