@@ -218,7 +218,8 @@ export const createProperty = async (
           Key: `properties/${Date.now()}-${file.originalname}`,
           Body: file.buffer,
           ContentType: file.mimetype,
-          ACL: 'public-read' as const,
+          CacheControl: 'max-age=31536000',
+          ServerSideEncryption: 'AES256',
         };
 
         const uploadResult = await new Upload({
