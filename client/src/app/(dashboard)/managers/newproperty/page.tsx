@@ -10,10 +10,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/router";
 
 const NewProperty = () => {
   const [createProperty] = useCreatePropertyMutation();
   const { data: authUser } = useGetAuthUserQuery();
+  const router = useRouter();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -60,7 +62,15 @@ const NewProperty = () => {
 
     formData.append("managerCognitoId", authUser.cognitoInfo.userId);
 
-    await createProperty(formData);
+    try {
+      // RTK Query mutations return a promise with unwrap()
+      await createProperty(formData).unwrap();
+      
+      router.push('/managers/properties');
+    } catch (error) {
+      console.error('Failed to create property:', error);
+      // Optionally show error toast/message to user
+    }
   };
 
   return (
