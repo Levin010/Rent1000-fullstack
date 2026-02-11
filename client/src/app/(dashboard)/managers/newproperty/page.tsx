@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const NewProperty = () => {
   const [createProperty] = useCreatePropertyMutation();
