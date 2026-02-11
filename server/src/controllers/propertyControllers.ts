@@ -86,3 +86,70 @@ export const createProperty = async (
       .json({ message: `Error creating property: ${err.message}` });
   }
 };
+
+export const updateProperty = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const files = req.files as Express.Multer.File[] | undefined;
+    
+    const {
+      address,
+      city,
+      state,
+      country,
+      postalCode,
+      ...propertyData
+    } = req.body;
+
+    // Prepare location data if address fields are provided
+    const locationData =
+      address && city && state && country && postalCode
+        ? { address, city, state, country, postalCode }
+        : undefined;
+
+    const result = await propertyService.updateProperty(
+      Number(id),
+      files,
+      locationData,
+      propertyData
+    );
+
+    if ('error' in result) {
+      res.status(result.status).json({ message: result.error });
+      return;
+    }
+
+    res.status(result.status).json(result.data);
+  } catch (err: any) {
+    console.error('Error updating property:', err);
+    res
+      .status(500)
+      .json({ message: `Error updating property: ${err.message}` });
+  }
+};
+
+export const deleteProperty = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const result = await propertyService.deleteProperty(Number(id));
+
+    if ('error' in result) {
+      res.status(result.status).json({ message: result.error });
+      return;
+    }
+
+    res.status(result.status).json(result.data);
+  } catch (err: any) {
+    console.error('Error deleting property:', err);
+    res
+      .status(500)
+      .json({ message: `Error deleting property: ${err.message}` });
+  }
+};

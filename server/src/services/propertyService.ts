@@ -325,6 +325,132 @@ export class PropertyService {
 
     return newProperty;
   }
+
+  async updateProperty(
+  id: number,
+  files: Express.Multer.File[] | undefined,
+  locationData: LocationData | undefined,
+  propertyData: Partial<PropertyData>
+) {
+  // Check if property exists
+  const existingProperty = await prisma.property.findUnique({
+    where: { id },
+    include: { location: true },
+  });
+
+  if (!existingProperty) {
+    return { error: "Property not found", status: 404 };
+  }
+
+  let photoUrls = existingProperty.photoUrls;
+  let locationId = existingProperty.locationId;
+
+  // Upload new photos if provided
+  if (files && files.length > 0) {
+    const newPhotoUrls = await this.uploadPhotosToS3(files);
+    photoUrls = [...existingProperty.photoUrls, ...newPhotoUrls];
+  }
+
+  // Update location if provided
+  if (locationData) {
+    const coordinates = await this.geocodeAddress(locationData);
+    const newLocation = await this.createLocation(locationData, coordinates);
+    locationId = newLocation.id;
+  }
+
+  // Prepare update data
+  const updateData: any = {
+    photoUrls,
+    locationId,
+  };
+
+  // Add optional fields if provided
+  if (propertyData.name) updateData.name = propertyData.name;
+  if (propertyData.description) updateData.description = propertyData.description;
+  if (propertyData.propertyType) updateData.propertyType = propertyData.propertyType as PropertyType;
+  
+  if (propertyData.amenities !== undefined) {
+    updateData.amenities = typeof propertyData.amenities === "string"
+      ? (propertyData.amenities.split(",") as Amenity[])
+      : [];
+  }
+  
+  if (propertyData.highlights !== undefined) {
+    updateData.highlights = typeof propertyData.highlights === "string"
+      ? (propertyData.highlights.split(",") as Highlight[])
+      : [];
+  }
+  
+  if (propertyData.isPetsAllowed !== undefined) {
+    updateData.isPetsAllowed = propertyData.isPetsAllowed === "true";
+  }
+  
+  if (propertyData.isParkingIncluded !== undefined) {
+    updateData.isParkingIncluded = propertyData.isParkingIncluded === "true";
+  }
+  
+  if (propertyData.pricePerMonth) {
+    updateData.pricePerMonth = parseFloat(propertyData.pricePerMonth);
+  }
+  
+  if (propertyData.securityDeposit) {
+    updateData.securityDeposit = parseFloat(propertyData.securityDeposit);
+  }
+  
+  if (propertyData.applicationFee) {
+    updateData.applicationFee = parseFloat(propertyData.applicationFee);
+  }
+  
+  if (propertyData.beds) updateData.beds = parseInt(propertyData.beds);
+  if (propertyData.baths) updateData.baths = parseFloat(propertyData.baths);
+  if (propertyData.squareFeet) updateData.squareFeet = parseInt(propertyData.squareFeet);
+
+  // Update property
+  const updatedProperty = await prisma.property.update({
+    where: { id },
+    data: updateData,
+    include: {
+      location: true,
+      manager: true,
+    },
+  });
+
+  return { data: updatedProperty, status: 200 };
+}
+
+async deleteProperty(id: number) {
+  // Check if property exists
+  const property = await prisma.property.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: {
+          applications: true,
+          leases: true,
+        },
+      },
+    },
+  });
+
+  if (!property) {
+    return { error: "Property not found", status: 404 };
+  }
+
+  // Check if property has active applications or leases
+  if (property._count.applications > 0 || property._count.leases > 0) {
+    return {
+      error: "Cannot delete property with active applications or leases",
+      status: 400,
+    };
+  }
+
+  // Delete the property
+  await prisma.property.delete({
+    where: { id },
+  });
+
+  return { data: { message: "Property deleted successfully" }, status: 200 };
+}
 }
 
 export const propertyService = new PropertyService();
