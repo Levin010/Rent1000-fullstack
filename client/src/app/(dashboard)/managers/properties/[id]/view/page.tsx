@@ -12,7 +12,6 @@ import PropertyOverview from "./PropertyOverview";
 import PropertyDetails from "./PropertyDetails";
 import PropertyLocation from "./PropertyLocation";
 import ContactWidget from "./ContactWidget";
-import ApplicationModal from "./ApplicationModal";
 import DeletePropertyModal from "./DeletePropertyModal";
 
 const SingleListing = () => {
@@ -20,7 +19,6 @@ const SingleListing = () => {
   const propertyId = Number(id);
   const router = useRouter();
   
-  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   const { data: authUser } = useGetAuthUserQuery();
@@ -32,11 +30,10 @@ const SingleListing = () => {
   
   const [deleteProperty, { isLoading: isDeleting }] = useDeletePropertyMutation();
 
-  // Check if current user is the manager who owns this property
+  // Manager always sees their own property in this view
   const isManagerOwner = useMemo(() => {
     if (!authUser || !property) return false;
     
-    // Check if user is a manager and owns this property
     return (
       authUser.userRole === "manager" &&
       authUser.cognitoInfo?.userId === property.managerCognitoId
@@ -47,16 +44,13 @@ const SingleListing = () => {
     try {
       await deleteProperty(propertyId).unwrap();
       setIsDeleteModalOpen(false);
-      // Redirect to manager properties page after successful deletion
       router.push("/managers/properties");
     } catch (error) {
       console.error("Failed to delete property:", error);
-      // Error toast is already handled by the mutation
     }
   };
 
   const handleEdit = () => {
-    // Navigate to edit page (we'll implement this later)
     router.push(`/managers/properties/${propertyId}/edit`);
   };
 
@@ -77,7 +71,7 @@ const SingleListing = () => {
   }
 
   return (
-    <div>
+    <div className="dashboard-container">
       <ImagePreviews images={property.photoUrls || []} />
       <div className="flex flex-col md:flex-row justify-center gap-10 mx-10 md:w-2/3 md:mx-auto mt-16 mb-8">
         <div className="order-2 md:order-1">
@@ -88,7 +82,7 @@ const SingleListing = () => {
 
         <div className="order-1 md:order-2">
           <ContactWidget
-            onOpenModal={() => setIsApplicationModalOpen(true)}
+            onOpenModal={() => {}} // Not used in manager view
             isManagerOwner={isManagerOwner}
             onDelete={() => setIsDeleteModalOpen(true)}
             onEdit={handleEdit}
@@ -96,16 +90,7 @@ const SingleListing = () => {
         </div>
       </div>
 
-      {/* Application Modal - Only for tenants */}
-      {authUser && !isManagerOwner && (
-        <ApplicationModal
-          isOpen={isApplicationModalOpen}
-          onClose={() => setIsApplicationModalOpen(false)}
-          propertyId={propertyId}
-        />
-      )}
-
-      {/* Delete Confirmation Modal - Only for manager owners */}
+      {/* Delete Confirmation Modal */}
       {isManagerOwner && (
         <DeletePropertyModal
           isOpen={isDeleteModalOpen}

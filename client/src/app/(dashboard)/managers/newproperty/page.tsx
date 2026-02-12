@@ -22,8 +22,8 @@ const NewProperty = () => {
     defaultValues: {
       name: "",
       description: "",
-      pricePerMonth: 1000,
-      securityDeposit: 500,
+      pricePerMonth: 10000,
+      securityDeposit: 5000,
       applicationFee: 100,
       isPetsAllowed: true,
       isParkingIncluded: true,
