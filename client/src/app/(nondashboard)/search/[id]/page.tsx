@@ -56,8 +56,7 @@ const SingleListing = () => {
   };
 
   const handleEdit = () => {
-    // Navigate to edit page (we'll implement this later)
-    router.push(`/managers/properties/${propertyId}/edit`);
+    router.push(`/search/${propertyId}/edit`);
   };
 
   if (isLoading) {

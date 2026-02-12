@@ -48,6 +48,8 @@ interface PropertyData {
   baths: string;
   squareFeet: string;
   [key: string]: any;
+  existingPhotos?: string;
+  photosToRemove?: string;
 }
 
 export class PropertyService {
@@ -332,7 +334,6 @@ export class PropertyService {
   locationData: LocationData | undefined,
   propertyData: Partial<PropertyData>
 ) {
-  // Check if property exists
   const existingProperty = await prisma.property.findUnique({
     where: { id },
     include: { location: true },
@@ -345,10 +346,19 @@ export class PropertyService {
   let photoUrls = existingProperty.photoUrls;
   let locationId = existingProperty.locationId;
 
+  // Handle photo management
+  const existingPhotos = propertyData.existingPhotos 
+    ? JSON.parse(propertyData.existingPhotos as string) 
+    : existingProperty.photoUrls;
+
   // Upload new photos if provided
   if (files && files.length > 0) {
     const newPhotoUrls = await this.uploadPhotosToS3(files);
-    photoUrls = [...existingProperty.photoUrls, ...newPhotoUrls];
+    // Combine existing (not removed) photos with new photos
+    photoUrls = [...existingPhotos, ...newPhotoUrls];
+  } else {
+    // Just use existing photos (with removed ones filtered out)
+    photoUrls = existingPhotos;
   }
 
   // Update location if provided
@@ -364,7 +374,7 @@ export class PropertyService {
     locationId,
   };
 
-  // Add optional fields if provided
+  // Add optional fields if provided (same as before)
   if (propertyData.name) updateData.name = propertyData.name;
   if (propertyData.description) updateData.description = propertyData.description;
   if (propertyData.propertyType) updateData.propertyType = propertyData.propertyType as PropertyType;
@@ -405,7 +415,6 @@ export class PropertyService {
   if (propertyData.baths) updateData.baths = parseFloat(propertyData.baths);
   if (propertyData.squareFeet) updateData.squareFeet = parseInt(propertyData.squareFeet);
 
-  // Update property
   const updatedProperty = await prisma.property.update({
     where: { id },
     data: updateData,

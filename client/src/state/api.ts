@@ -261,6 +261,25 @@ export const api = createApi({
       },
     }),
 
+    updateProperty: build.mutation<Property, { id: number; data: FormData }>({
+      query: ({ id, data }) => ({
+        url: `properties/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Properties", id: "LIST" },
+        { type: "Properties", id },
+        ...(result ? [{ type: "Managers" as const, id: result.managerCognitoId }] : []),
+      ],
+      async onQueryStarted(_, { queryFulfilled }) {
+        await withToast(queryFulfilled, {
+          success: "Property updated successfully!",
+          error: "Failed to update property.",
+        });
+      },
+    }),
+
     deleteProperty: build.mutation<void, number>({
       query: (id) => ({
         url: `properties/${id}`,
@@ -378,6 +397,7 @@ export const {
   useGetManagerPropertiesQuery,
   useCreatePropertyMutation,
   useDeletePropertyMutation,
+  useUpdatePropertyMutation,
   useGetTenantQuery,
   useAddFavoritePropertyMutation,
   useRemoveFavoritePropertyMutation,

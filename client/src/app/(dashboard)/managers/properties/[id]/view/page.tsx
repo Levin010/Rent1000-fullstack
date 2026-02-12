@@ -26,7 +26,9 @@ const SingleListing = () => {
     data: property,
     isError,
     isLoading,
-  } = useGetPropertyQuery(propertyId);
+    refetch,
+  } = useGetPropertyQuery(propertyId, {
+    refetchOnMountOrArgChange: true});
   
   const [deleteProperty, { isLoading: isDeleting }] = useDeletePropertyMutation();
 
