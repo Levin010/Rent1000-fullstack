@@ -7,7 +7,7 @@ export const getManager = async (
 ): Promise<void> => {
   try {
     const { cognitoId } = req.params;
-    const manager = await managerService.getManagerByCognitoId(cognitoId);
+    const manager = await managerService.getManagerByCognitoId(cognitoId as string);
 
     if (!manager) {
       res.status(404).json({ message: "Manager not found" });
@@ -52,7 +52,7 @@ export const updateManager = async (
     const { cognitoId } = req.params;
     const { name, email, phoneNumber } = req.body;
 
-    const updatedManager = await managerService.updateManager(cognitoId, {
+    const updatedManager = await managerService.updateManager(cognitoId as string, {
       name,
       email,
       phoneNumber,
@@ -72,7 +72,7 @@ export const getManagerProperties = async (
 ): Promise<void> => {
   try {
     const { cognitoId } = req.params;
-    const properties = await managerService.getManagerProperties(cognitoId);
+    const properties = await managerService.getManagerProperties(cognitoId as string);
 
     res.json(properties);
   } catch (err: any) {

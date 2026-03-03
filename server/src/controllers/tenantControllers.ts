@@ -4,7 +4,7 @@ import { tenantService } from "../services/tenantService";
 export const getTenant = async (req: Request, res: Response): Promise<void> => {
   try {
     const { cognitoId } = req.params;
-    const tenant = await tenantService.getTenantByCognitoId(cognitoId);
+    const tenant = await tenantService.getTenantByCognitoId(cognitoId as string);
 
     if (!tenant) {
       res.status(404).json({ message: "Tenant not found" });
@@ -49,7 +49,7 @@ export const updateTenant = async (
     const { cognitoId } = req.params;
     const { name, email, phoneNumber } = req.body;
 
-    const updatedTenant = await tenantService.updateTenant(cognitoId, {
+    const updatedTenant = await tenantService.updateTenant(cognitoId as string, {
       name,
       email,
       phoneNumber,
@@ -69,7 +69,7 @@ export const getCurrentResidences = async (
 ): Promise<void> => {
   try {
     const { cognitoId } = req.params;
-    const residences = await tenantService.getCurrentResidences(cognitoId);
+    const residences = await tenantService.getCurrentResidences(cognitoId as string);
 
     res.json(residences);
   } catch (err: any) {
@@ -88,7 +88,7 @@ export const addFavoriteProperty = async (
     const propertyIdNumber = Number(propertyId);
 
     const result = await tenantService.addFavoriteProperty(
-      cognitoId,
+      cognitoId as string,
       propertyIdNumber
     );
 
@@ -114,7 +114,7 @@ export const removeFavoriteProperty = async (
     const propertyIdNumber = Number(propertyId);
 
     const updatedTenant = await tenantService.removeFavoriteProperty(
-      cognitoId,
+      cognitoId as string,
       propertyIdNumber
     );
 
